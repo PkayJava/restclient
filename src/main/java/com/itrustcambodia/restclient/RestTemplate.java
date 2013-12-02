@@ -67,7 +67,8 @@ public class RestTemplate {
 
         CredentialsProvider credential = new BasicCredentialsProvider();
         credential.setCredentials(authScope, new UsernamePasswordCredentials(username, password));
-        context.setCredentialsProvider(credential);
+        this.context = HttpClientContext.create();
+        this.context.setCredentialsProvider(credential);
 
         Registry<AuthSchemeProvider> registry = registryBuilder.build();
 
