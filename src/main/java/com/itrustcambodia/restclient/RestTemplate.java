@@ -2,6 +2,7 @@ package com.itrustcambodia.restclient;
 
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.auth.AuthSchemeProvider;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
@@ -91,9 +92,11 @@ public class RestTemplate {
         return this.client.execute(request, this.context);
     }
 
-    public void destroy() throws Exception {
+    public void destroy() {
         this.context = null;
-        this.client.close();
+        if (this.client != null) {
+            IOUtils.closeQuietly(this.client);
+        }
     }
 
 }
