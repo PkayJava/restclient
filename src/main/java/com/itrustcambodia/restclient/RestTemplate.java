@@ -158,12 +158,12 @@ public class RestTemplate {
         return executeAndReturn(request);
     }
 
-    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request, Class<T> responseType, String contentType) {
+    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request, String contentType, Class<T> responseType) {
         request.setHeader("Content-Type", contentType);
         return executeAndReturn(request, responseType);
     }
 
-    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request, Class<T> responseType, String contentType, HttpEntity entity) {
+    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request, String contentType, HttpEntity entity, Class<T> responseType) {
         request.setHeader("Content-Type", contentType);
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
