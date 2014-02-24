@@ -4,7 +4,7 @@
 	<groupId>com.itrustcambodia.restclient</groupId>
 	<artifactId>restclient</artifactId>
 	<name>restclient</name>
-	<version>1.2.8-SNAPSHOT</version>
+	<version>1.2.8</version>
 
 	<properties>
 		<java.version>1.6</java.version>
@@ -27,7 +27,7 @@
 		<url>https://github.com/PkayJava/restclient</url>
 		<connection>scm:git:git://github.com/PkayJava/restclient.git</connection>
 		<developerConnection>scm:git:git@github.com:PkayJava/restclient.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>restclient-1.2.8</tag>
 	</scm>
 
 	<distributionManagement>
