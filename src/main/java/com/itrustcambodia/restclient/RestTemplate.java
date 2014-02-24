@@ -10,6 +10,7 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.AuthSchemes;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -60,13 +61,16 @@ public class RestTemplate {
         if (org.apache.commons.lang3.StringUtils.isEmpty(password)) {
             throw new NullPointerException("password can not be null or empty");
         }
-        RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder.<AuthSchemeProvider> create();
+        RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder
+                .<AuthSchemeProvider> create();
 
-        AuthScope authScope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, null, AuthSchemes.BASIC);
+        AuthScope authScope = new AuthScope(AuthScope.ANY_HOST,
+                AuthScope.ANY_PORT, null, AuthSchemes.BASIC);
         registryBuilder.register(AuthSchemes.BASIC, new BasicSchemeFactory());
 
         CredentialsProvider credential = new BasicCredentialsProvider();
-        credential.setCredentials(authScope, new UsernamePasswordCredentials(username, password));
+        credential.setCredentials(authScope, new UsernamePasswordCredentials(
+                username, password));
         this.context = HttpClientContext.create();
         this.context.setCredentialsProvider(credential);
 
@@ -88,13 +92,16 @@ public class RestTemplate {
         if (org.apache.commons.lang3.StringUtils.isEmpty(realm)) {
             throw new NullPointerException("realm can not be null or empty");
         }
-        RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder.<AuthSchemeProvider> create();
+        RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder
+                .<AuthSchemeProvider> create();
 
-        AuthScope authScope = new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT, realm, AuthSchemes.DIGEST);
+        AuthScope authScope = new AuthScope(AuthScope.ANY_HOST,
+                AuthScope.ANY_PORT, realm, AuthSchemes.DIGEST);
         registryBuilder.register(AuthSchemes.DIGEST, new DigestSchemeFactory());
 
         CredentialsProvider credential = new BasicCredentialsProvider();
-        credential.setCredentials(authScope, new UsernamePasswordCredentials(username, password));
+        credential.setCredentials(authScope, new UsernamePasswordCredentials(
+                username, password));
         this.context = HttpClientContext.create();
         this.context.setCredentialsProvider(credential);
 
@@ -106,7 +113,8 @@ public class RestTemplate {
         this.gson = new Gson();
     }
 
-    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request, Class<T> responseType) {
+    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request,
+            Class<T> responseType) {
         CloseableHttpResponse response = null;
         try {
             response = doExecute(request);
@@ -117,7 +125,8 @@ public class RestTemplate {
             HttpEntity httpEntity = response.getEntity();
             try {
                 String content = EntityUtils.toString(httpEntity, "UTF-8");
-                return new ResponseEntity<T>(response, this.gson.fromJson(content, responseType));
+                return new ResponseEntity<T>(response, this.gson.fromJson(
+                        content, responseType));
             } catch (IOException e) {
             } finally {
                 IOUtils.closeQuietly(response);
@@ -136,7 +145,8 @@ public class RestTemplate {
         if (response != null) {
             HttpEntity httpEntity = response.getEntity();
             try {
-                return new ResponseEntity<byte[]>(response, EntityUtils.toByteArray(httpEntity));
+                return new ResponseEntity<byte[]>(response,
+                        EntityUtils.toByteArray(httpEntity));
             } catch (IOException e) {
             } finally {
                 IOUtils.closeQuietly(response);
@@ -145,12 +155,14 @@ public class RestTemplate {
         return new ResponseEntity<byte[]>(HttpStatus.SC_SERVICE_UNAVAILABLE);
     }
 
-    public ResponseEntity<byte[]> executeAndReturn(HttpUriRequest request, String contentType) {
+    public ResponseEntity<byte[]> executeAndReturn(HttpUriRequest request,
+            String contentType) {
         request.setHeader("Content-Type", contentType);
         return executeAndReturn(request);
     }
 
-    public ResponseEntity<byte[]> executeAndReturn(HttpUriRequest request, String contentType, HttpEntity entity) {
+    public ResponseEntity<byte[]> executeAndReturn(HttpUriRequest request,
+            String contentType, HttpEntity entity) {
         request.setHeader("Content-Type", contentType);
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
@@ -158,12 +170,14 @@ public class RestTemplate {
         return executeAndReturn(request);
     }
 
-    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request, String contentType, Class<T> responseType) {
+    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request,
+            String contentType, Class<T> responseType) {
         request.setHeader("Content-Type", contentType);
         return executeAndReturn(request, responseType);
     }
 
-    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request, String contentType, HttpEntity entity, Class<T> responseType) {
+    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request,
+            String contentType, HttpEntity entity, Class<T> responseType) {
         request.setHeader("Content-Type", contentType);
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
@@ -191,14 +205,16 @@ public class RestTemplate {
         return new ResponseEntity<Void>(HttpStatus.SC_SERVICE_UNAVAILABLE);
     }
 
-    public ResponseEntity<Void> execute(HttpUriRequest request, HttpEntity entity) {
+    public ResponseEntity<Void> execute(HttpUriRequest request,
+            HttpEntity entity) {
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
         }
         return execute(request);
     }
 
-    public ResponseEntity<Void> execute(HttpUriRequest request, String contentType, HttpEntity entity) {
+    public ResponseEntity<Void> execute(HttpUriRequest request,
+            String contentType, HttpEntity entity) {
         request.addHeader("Content-Type", contentType);
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
@@ -206,8 +222,17 @@ public class RestTemplate {
         return execute(request);
     }
 
-    public CloseableHttpResponse doExecute(HttpUriRequest request) throws IOException, ClientProtocolException {
+    public CloseableHttpResponse doExecute(HttpUriRequest request)
+            throws IOException, ClientProtocolException {
         return this.client.execute(request, this.context);
+    }
+
+    public HttpClientContext getClientContext() {
+        return this.context;
+    }
+
+    public HttpClient getHttpClient() {
+        return this.client;
     }
 
     public void destroy() {
