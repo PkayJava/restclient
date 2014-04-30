@@ -12,13 +12,14 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.AuthSchemes;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
-import org.apache.http.impl.auth.BasicSchemeFactory;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.DigestSchemeFactory;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -61,23 +62,17 @@ public class RestTemplate {
         if (org.apache.commons.lang3.StringUtils.isEmpty(password)) {
             throw new NullPointerException("password can not be null or empty");
         }
-        RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder
-                .<AuthSchemeProvider> create();
 
         AuthScope authScope = new AuthScope(AuthScope.ANY_HOST,
-                AuthScope.ANY_PORT, null, AuthSchemes.BASIC);
-        registryBuilder.register(AuthSchemes.BASIC, new BasicSchemeFactory());
-
+                AuthScope.ANY_PORT);
         CredentialsProvider credential = new BasicCredentialsProvider();
         credential.setCredentials(authScope, new UsernamePasswordCredentials(
                 username, password));
         this.context = HttpClientContext.create();
         this.context.setCredentialsProvider(credential);
 
-        Registry<AuthSchemeProvider> registry = registryBuilder.build();
-
         HttpClientBuilder httpClientBuilder = HttpClients.custom();
-        httpClientBuilder.setDefaultAuthSchemeRegistry(registry);
+        httpClientBuilder.setDefaultCredentialsProvider(credential);
         this.client = httpClientBuilder.build();
         this.gson = new Gson();
     }
@@ -95,10 +90,10 @@ public class RestTemplate {
         RegistryBuilder<AuthSchemeProvider> registryBuilder = RegistryBuilder
                 .<AuthSchemeProvider> create();
 
-        AuthScope authScope = new AuthScope(AuthScope.ANY_HOST,
-                AuthScope.ANY_PORT, realm, AuthSchemes.DIGEST);
         registryBuilder.register(AuthSchemes.DIGEST, new DigestSchemeFactory());
 
+        AuthScope authScope = new AuthScope(AuthScope.ANY_HOST,
+                AuthScope.ANY_PORT, realm, AuthSchemes.DIGEST);
         CredentialsProvider credential = new BasicCredentialsProvider();
         credential.setCredentials(authScope, new UsernamePasswordCredentials(
                 username, password));
@@ -156,14 +151,14 @@ public class RestTemplate {
     }
 
     public ResponseEntity<byte[]> executeAndReturn(HttpUriRequest request,
-            String contentType) {
-        request.setHeader("Content-Type", contentType);
-        return executeAndReturn(request);
-    }
+            HttpEntity entity) {
+        if (entity instanceof UrlEncodedFormEntity) {
+            request.setHeader("Content-Type",
+                    RestTemplate.APPLICATION_FORM_URLENCODED);
+        } else if (entity instanceof StringEntity) {
+            request.setHeader("Content-Type", RestTemplate.APPLICATION_JSON);
+        }
 
-    public ResponseEntity<byte[]> executeAndReturn(HttpUriRequest request,
-            String contentType, HttpEntity entity) {
-        request.setHeader("Content-Type", contentType);
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
         }
@@ -171,14 +166,13 @@ public class RestTemplate {
     }
 
     public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request,
-            String contentType, Class<T> responseType) {
-        request.setHeader("Content-Type", contentType);
-        return executeAndReturn(request, responseType);
-    }
-
-    public <T> ResponseEntity<T> executeAndReturn(HttpUriRequest request,
-            String contentType, HttpEntity entity, Class<T> responseType) {
-        request.setHeader("Content-Type", contentType);
+            HttpEntity entity, Class<T> responseType) {
+        if (entity instanceof UrlEncodedFormEntity) {
+            request.setHeader("Content-Type",
+                    RestTemplate.APPLICATION_FORM_URLENCODED);
+        } else if (entity instanceof StringEntity) {
+            request.setHeader("Content-Type", RestTemplate.APPLICATION_JSON);
+        }
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
         }
@@ -207,15 +201,12 @@ public class RestTemplate {
 
     public ResponseEntity<Void> execute(HttpUriRequest request,
             HttpEntity entity) {
-        if (request instanceof HttpEntityEnclosingRequestBase) {
-            ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
+        if (entity instanceof UrlEncodedFormEntity) {
+            request.setHeader("Content-Type",
+                    RestTemplate.APPLICATION_FORM_URLENCODED);
+        } else if (entity instanceof StringEntity) {
+            request.setHeader("Content-Type", RestTemplate.APPLICATION_JSON);
         }
-        return execute(request);
-    }
-
-    public ResponseEntity<Void> execute(HttpUriRequest request,
-            String contentType, HttpEntity entity) {
-        request.addHeader("Content-Type", contentType);
         if (request instanceof HttpEntityEnclosingRequestBase) {
             ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
         }
